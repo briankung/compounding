@@ -1,9 +1,9 @@
 module Compounding
   def self.CalculatePeriodic(principal, apy, annual_compoundings, years)
-    (principal * (1 + (apy/annual_compoundings)) ** (annual_compoundings * years)).round(2)
+    principal * (1 + (apy/annual_compoundings)) ** (annual_compoundings * years)
   end
 
   def self.CalculateContinuous(principal, apy, years)
-    (principal * Math::E ** (apy * years)).round(2)
+    principal * Math::E ** (apy * years)
   end
 end

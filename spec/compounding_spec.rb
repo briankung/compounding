@@ -1,11 +1,4 @@
-# It seems like financially a an average year is expected to be
-# 31556926 seconds. This is different than 1.year or (60 * 60 * 24 * 365)
-# Source: https://www.epochconverter.com/timestamp-list#seconds
-
-# It also makes the interest rate formulas work out 🙄 probably because 1.year
-# by itself assumes the average number of seconds in a year
-ONE_YEAR_IN_SECONDS = 31556926
-
+ONE_YEAR_IN_SECONDS = Compounding::ONE_YEAR_IN_SECONDS
 
 RSpec.describe Compounding do
   it "has a version number" do
@@ -22,17 +15,13 @@ RSpec.describe Compounding do
       end
 
       it 'calculates periodic interest' do
-        expect(periodic(1, 1, 1, 1)).to eq 2
+        expect(periodic(1, 1, 1, 1)).to be_within(0.01).of(2)
 
-        expect(periodic(1000, 0.05, 2, 1)).to eq 1050.63
+        expect(periodic(1000, 0.05, 2, 1)).to be_within(0.01).of(1050.63)
 
-        expect(periodic(10_000, 0.08, 4, 1)).to eq 10_824.32
+        expect(periodic(10_000, 0.08, 4, 1)).to be_within(0.01).of(10_824.32)
 
-        expect(periodic(1200, 0.1249, 12, 0.5)).to eq 1_276.92
-
-        expect(
-          periodic(1500, 0.1249, 12, 0.5) - periodic(300, 0.1249, 12, 0.5)
-        ).to eq 1_276.92
+        expect(periodic(1200, 0.1249, 12, 0.5)).to be_within(0.01).of(1_276.92)
       end
     end
 
@@ -45,17 +34,13 @@ RSpec.describe Compounding do
       end
 
       it 'calculates continuous interest' do
-        expect(continuous(1000, 0.05, 5)).to eq 1284.03
+        expect(continuous(1000, 0.05, 5)).to be_within(0.01).of(1284.03)
 
-        expect(continuous(500, 0.1, 5)).to eq 824.36
+        expect(continuous(500, 0.1, 5)).to be_within(0.01).of(824.36)
 
-        expect(continuous(2000, 0.13, 20)).to eq 26_927.48
+        expect(continuous(2000, 0.13, 20)).to be_within(0.01).of(26_927.47)
 
-        expect(continuous(20_000, 0.01, 20)).to eq 24_428.06
-
-        expect(
-          continuous(25_000, 0.01, 20) - continuous(5_000, 0.01, 20)
-        ).to be_within(0.01).of(24_428.06)
+        expect(continuous(20_000, 0.01, 20)).to be_within(0.01).of(24_428.05)
       end
     end
   end
@@ -129,23 +114,23 @@ RSpec.describe Compounding do
         let(:six_months) { ONE_YEAR_IN_SECONDS / 2 }
 
         it 'calculates interest after 1 year' do
-          expect(balance_after(ONE_YEAR_IN_SECONDS)).to eq 2000
+          expect(balance_after(ONE_YEAR_IN_SECONDS)).to be_within(0.01).of(2000)
         end
 
         it 'calculates interest after 2 years' do
-          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to eq 4000
+          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to be_within(0.01).of(4000)
         end
 
         it 'calculates interest after 2 years with one credit' do
           account.add_credit(1000, time + ONE_YEAR_IN_SECONDS)
 
-          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to eq 6000
+          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to be_within(0.01).of(6000)
         end
 
         it 'calculates interest after 2 years with one debit' do
           account.add_debit(1000, time + ONE_YEAR_IN_SECONDS)
 
-          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to eq 2000
+          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to be_within(0.01).of(2000)
         end
       end
     end

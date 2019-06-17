@@ -1,3 +1,4 @@
+require "compounding/constants"
 require "compounding/account_ledger_item"
 
 module Compounding
@@ -46,7 +47,7 @@ module Compounding
           principal + principal_added_at(beginning),
           @apy,
           @annual_compoundings,
-          ((ending - beginning) / 1.year)
+          ((ending - beginning) / Compounding::ONE_YEAR_IN_SECONDS)
         )
       end
     end

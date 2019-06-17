@@ -1,6 +1,5 @@
 require "bundler/setup"
 require "compounding"
-require 'timecop'
 require 'pry'
 
 RSpec.configure do |config|
