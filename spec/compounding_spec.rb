@@ -1,3 +1,12 @@
+# It seems like financially a an average year is expected to be
+# 31556926 seconds. This is different than 1.year or (60 * 60 * 24 * 365)
+# Source: https://www.epochconverter.com/timestamp-list#seconds
+
+# It also makes the interest rate formulas work out 🙄 probably because 1.year
+# by itself assumes the average number of seconds in a year
+ONE_YEAR_IN_SECONDS = 31556926
+
+
 RSpec.describe Compounding do
   it "has a version number" do
     expect(Compounding::VERSION).not_to be nil
@@ -107,14 +116,36 @@ RSpec.describe Compounding do
       end
     end
 
-    describe 'balance' do
+    describe '#balance_at' do
       before do
         account.add_credit(1000, time)
       end
 
       context 'periodically compounded interest' do
+        def balance_after(duration)
+          account.balance_at(time + duration)
+        end
+
+        let(:six_months) { ONE_YEAR_IN_SECONDS / 2 }
+
         it 'calculates interest after 1 year' do
-          expect(account.balance_after(1.year)).to eq 2000
+          expect(balance_after(ONE_YEAR_IN_SECONDS)).to eq 2000
+        end
+
+        it 'calculates interest after 2 years' do
+          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to eq 4000
+        end
+
+        it 'calculates interest after 2 years with one credit' do
+          account.add_credit(1000, time + ONE_YEAR_IN_SECONDS)
+
+          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to eq 6000
+        end
+
+        it 'calculates interest after 2 years with one debit' do
+          account.add_debit(1000, time + ONE_YEAR_IN_SECONDS)
+
+          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to eq 2000
         end
       end
     end
