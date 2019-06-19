@@ -1,4 +1,4 @@
-ONE_YEAR_IN_SECONDS = Compounding::ONE_YEAR_IN_SECONDS
+require 'date'
 
 RSpec.describe Compounding do
   it "has a version number" do
@@ -107,30 +107,28 @@ RSpec.describe Compounding do
       end
 
       context 'periodically compounded interest' do
-        def balance_after(duration)
-          account.balance_at(time + duration)
+        def after(years:)
+          time.to_datetime.next_year(years).to_time
         end
 
-        let(:six_months) { ONE_YEAR_IN_SECONDS / 2 }
-
         it 'calculates interest after 1 year' do
-          expect(balance_after(ONE_YEAR_IN_SECONDS)).to be_within(0.01).of(2000)
+          expect(account.balance_at(after(years: 1))).to be_within(0.01).of(2000)
         end
 
         it 'calculates interest after 2 years' do
-          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to be_within(0.01).of(4000)
+          expect(account.balance_at(after(years: 2))).to be_within(0.01).of(4000)
         end
 
         it 'calculates interest after 2 years with one credit' do
-          account.add_credit(1000, time + ONE_YEAR_IN_SECONDS)
+          account.add_credit(1000, after(years: 1))
 
-          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to be_within(0.01).of(6000)
+          expect(account.balance_at(after(years: 2))).to be_within(0.01).of(6000)
         end
 
         it 'calculates interest after 2 years with one debit' do
-          account.add_debit(1000, time + ONE_YEAR_IN_SECONDS)
+          account.add_debit(1000, after(years: 1))
 
-          expect(balance_after(2 * ONE_YEAR_IN_SECONDS)).to be_within(0.01).of(2000)
+          expect(account.balance_at(after(years: 1))).to be_within(0.01).of(2000)
         end
       end
     end

@@ -1,3 +1,4 @@
+require 'date'
 require "compounding/constants"
 require "compounding/account_ledger_item"
 
@@ -38,22 +39,41 @@ module Compounding
       ledger_events.first
     end
 
+    def increment_years(beginning, number_of_years)
+      beginning.to_datetime.next_year(number_of_years).to_time
+    end
+
+    def time_in_years(beginning, ending)
+      years_from_beginning = ending.year - beginning.year
+      final_year = increment_years(beginning, years_from_beginning)
+
+      until final_year >= ending
+        years_from_beginning += 1
+        final_year = increment_years(beginning, years_from_beginning)
+      end
+
+      penultimate_year = increment_years(beginning, years_from_beginning - 1)
+      proportion_of_final_year = (ending - penultimate_year) / (final_year - penultimate_year)
+
+      (years_from_beginning - 1) + proportion_of_final_year
+    end
+
     def balance_at(ending)
       events = ledger_events.select { |t| (opened_at...ending).include?(t) }
       events << ending
 
       events.each_cons(2).reduce(0) do |principal, (beginning, ending)|
-        Compounding::CalculatePeriodic(
+          Compounding::CalculatePeriodic(
           principal + principal_added_at(beginning),
           @apy,
           @annual_compoundings,
-          ((ending - beginning) / Compounding::ONE_YEAR_IN_SECONDS)
+          time_in_years(beginning, ending)
         )
       end
     end
 
     def ledger_events
-      ledger_items.map(&:added_at).sort.uniq
+      ledger_items.map(&:added_at).uniq.sort
     end
   end
 end
