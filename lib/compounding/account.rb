@@ -1,4 +1,3 @@
-require 'date'
 require "compounding/constants"
 require "compounding/account_ledger_item"
 
