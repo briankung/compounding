@@ -12,19 +12,29 @@ module Compounding
     end
 
     def add_credit(amount, added_at)
-      ledger_items << LedgerItem.new(
-        amount: amount,
-        added_at: added_at,
-        type: :credit
-      )
+      add_ledger_item(amount: amount, added_at: added_at, type: :credit)
     end
 
     def add_debit(amount, added_at)
-      ledger_items << LedgerItem.new(
-        amount: amount,
-        added_at: added_at,
-        type: :debit
-      )
+      add_ledger_item(amount: amount, added_at: added_at, type: :debit)
+    end
+
+    def balance_at(ending)
+      events = ledger_events.select { |t| (opened_at...ending).include?(t) }
+      events << ending
+
+      events.each_cons(2).reduce(0) do |principal, (beginning, ending)|
+        Compounding::CalculatePeriodic(
+          principal + principal_added_at(beginning),
+          @apy,
+          @annual_compoundings,
+          time_in_years(beginning, ending)
+        )
+      end
+    end
+
+    def opened_at
+      ledger_events.first
     end
 
     def ledger_items_at(time)
@@ -35,45 +45,37 @@ module Compounding
       ledger_items_at(time).sum(&:to_i)
     end
 
-    def opened_at
-      ledger_events.first
-    end
+    private
 
-    def increment_years(beginning, number_of_years)
-      beginning.to_datetime.next_year(number_of_years).to_time
-    end
-
-    def time_in_years(beginning, ending)
-      years_from_beginning = ending.year - beginning.year
-      final_year = increment_years(beginning, years_from_beginning)
-
-      until final_year >= ending
-        years_from_beginning += 1
-        final_year = increment_years(beginning, years_from_beginning)
-      end
-
-      penultimate_year = increment_years(beginning, years_from_beginning - 1)
-      proportion_of_final_year = (ending - penultimate_year) / (final_year - penultimate_year)
-
-      (years_from_beginning - 1) + proportion_of_final_year
-    end
-
-    def balance_at(ending)
-      events = ledger_events.select { |t| (opened_at...ending).include?(t) }
-      events << ending
-
-      events.each_cons(2).reduce(0) do |principal, (beginning, ending)|
-          Compounding::CalculatePeriodic(
-          principal + principal_added_at(beginning),
-          @apy,
-          @annual_compoundings,
-          time_in_years(beginning, ending)
+      def add_ledger_item(amount:, added_at:, type:)
+        ledger_items << LedgerItem.new(
+          amount: amount,
+          added_at: added_at,
+          type: type
         )
       end
-    end
 
-    def ledger_events
-      ledger_items.map(&:added_at).uniq.sort
-    end
+      def increment_years(beginning, number_of_years)
+        beginning.to_datetime.next_year(number_of_years).to_time
+      end
+
+      def time_in_years(beginning, ending)
+        years_from_beginning = ending.year - beginning.year
+        final_year = increment_years(beginning, years_from_beginning)
+
+        until final_year >= ending
+          years_from_beginning += 1
+          final_year = increment_years(beginning, years_from_beginning)
+        end
+
+        penultimate_year = increment_years(beginning, years_from_beginning - 1)
+        proportion_of_final_year = (ending - penultimate_year) / (final_year - penultimate_year)
+
+        (years_from_beginning - 1) + proportion_of_final_year
+      end
+
+      def ledger_events
+        ledger_items.map(&:added_at).uniq.sort
+      end
   end
 end
