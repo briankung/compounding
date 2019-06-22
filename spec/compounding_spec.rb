@@ -102,33 +102,37 @@ RSpec.describe Compounding do
     end
 
     describe '#balance_at' do
-      before do
-        account.add_credit(1000, time)
+      def next_year(years)
+        time.to_datetime.next_year(years).to_time
       end
 
-      context 'periodically compounded interest' do
-        def after(years:)
-          time.to_datetime.next_year(years).to_time
+      def balance_after(years:)
+        account.balance_at(next_year(years))
+      end
+
+      context 'with periodically compounded interest' do
+        before do
+          account.add_credit(1000, time)
         end
 
         it 'calculates interest after 1 year' do
-          expect(account.balance_at(after(years: 1))).to be_within(0.01).of(2000)
+          expect(balance_after(years: 1)).to be_within(0.01).of(2000)
         end
 
         it 'calculates interest after 2 years' do
-          expect(account.balance_at(after(years: 2))).to be_within(0.01).of(4000)
+          expect(balance_after(years: 2)).to be_within(0.01).of(4000)
         end
 
         it 'calculates interest after 2 years with one credit' do
-          account.add_credit(1000, after(years: 1))
+          account.add_credit(1000, next_year(1))
 
-          expect(account.balance_at(after(years: 2))).to be_within(0.01).of(6000)
+          expect(balance_after(years: 2)).to be_within(0.01).of(6000)
         end
 
         it 'calculates interest after 2 years with one debit' do
-          account.add_debit(1000, after(years: 1))
+          account.add_debit(1000, next_year(1))
 
-          expect(account.balance_at(after(years: 1))).to be_within(0.01).of(2000)
+          expect(balance_after(years: 1)).to be_within(0.01).of(2000)
         end
       end
     end
