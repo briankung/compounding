@@ -6,17 +6,28 @@ module Compounding
     attr_accessor :ledger_items, :interest
 
     def initialize(apy:, continuous:, annual_compoundings: nil)
+      # TODO: require annual_compoundings if continuous == false
       @apy, @continuous, @annual_compoundings = apy, continuous, annual_compoundings
       @ledger_items = []
       @interest = []
     end
 
-    def add_credit(amount, added_at)
-      add_ledger_item(amount: amount, added_at: added_at, type: :credit)
+    def add_credit(amount, added_at, recurs: false)
+      add_ledger_item(
+        amount: amount,
+        added_at: added_at,
+        type: :credit,
+        recurs: recurs
+      )
     end
 
-    def add_debit(amount, added_at)
-      add_ledger_item(amount: amount, added_at: added_at, type: :debit)
+    def add_debit(amount, added_at, recurs: false)
+      add_ledger_item(
+        amount: amount,
+        added_at: added_at,
+        type: :debit,
+        recurs: recurs
+      )
     end
 
     def balance_at(ending)
@@ -54,11 +65,12 @@ module Compounding
 
     private
 
-      def add_ledger_item(amount:, added_at:, type:)
+      def add_ledger_item(amount:, added_at:, type:, recurs:)
         ledger_items << LedgerItem.new(
           amount: amount,
           added_at: added_at,
-          type: type
+          type: type,
+          recurs: recurs
         )
       end
 

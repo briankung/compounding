@@ -60,7 +60,8 @@ RSpec.describe Compounding do
         Compounding::Account::LedgerItem.new(
           amount: 1000,
           added_at: time,
-          type: :credit
+          type: :credit,
+          recurs: false
         )
       end
 
@@ -68,7 +69,8 @@ RSpec.describe Compounding do
         Compounding::Account::LedgerItem.new(
           amount: 1000,
           added_at: time,
-          type: :debit
+          type: :debit,
+          recurs: false
         )
       end
 
@@ -131,6 +133,20 @@ RSpec.describe Compounding do
           account.add_debit(1000, next_year(1))
 
           expect(balance_after(years: 1)).to be_within(0.01).of(2000)
+        end
+      end
+
+      context 'with recurrent payments' do
+        before do
+          account.add_debit(1000, time)
+        end
+
+        it 'calculates interest' do
+          account.add_credit 1000, next_year(1), recurs: { years: 1 }
+
+          expect(balance_after(years: 2)).to be_within(0.01).of(-1000)
+          expect(balance_after(years: 3)).to be_within(0.01).of(-1000)
+          expect(balance_after(years: 4)).to be_within(0.01).of(-1000)
         end
       end
     end
