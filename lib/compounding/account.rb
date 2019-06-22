@@ -31,6 +31,7 @@ module Compounding
     end
 
     def balance_at(ending)
+      ending = ending.to_time if ending.respond_to? :to_time
       self.interest = []
       events = ledger_events.select { |t| (opened_at...ending).include?(t) }
       events << ending
@@ -68,7 +69,7 @@ module Compounding
       def add_ledger_item(amount:, added_at:, type:, recurs:)
         ledger_items << LedgerItem.new(
           amount: amount,
-          added_at: added_at,
+          added_at: added_at.to_time,
           type: type,
           recurs: recurs
         )
