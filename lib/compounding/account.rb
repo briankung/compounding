@@ -3,11 +3,12 @@ require "compounding/account_ledger_item"
 
 module Compounding
   class Account
-    attr_accessor :ledger_items
+    attr_accessor :ledger_items, :interest
 
     def initialize(apy:, continuous:, annual_compoundings: nil)
       @apy, @continuous, @annual_compoundings = apy, continuous, annual_compoundings
       @ledger_items = []
+      @interest = []
     end
 
     def add_credit(amount, added_at)
@@ -19,16 +20,23 @@ module Compounding
     end
 
     def balance_at(ending)
+      self.interest = []
       events = ledger_events.select { |t| (opened_at...ending).include?(t) }
       events << ending
 
       events.each_cons(2).reduce(0) do |principal, (beginning, ending)|
-        Compounding::CalculatePeriodic(
-          principal + principal_added_at(beginning),
+        starting_principal = principal + principal_added_at(beginning)
+
+        ending_principal = Compounding::CalculatePeriodic(
+          starting_principal,
           @apy,
           @annual_compoundings,
           time_in_years(beginning, ending)
         )
+
+        interest << { interest: ending_principal - starting_principal, date_range: beginning...ending }
+
+        ending_principal
       end
     end
 
