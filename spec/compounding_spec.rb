@@ -123,6 +123,14 @@ RSpec.describe Compounding do
           expect(balance_after(years: 2)).to be_within(0.01).of(4000)
         end
 
+        it 'calculates interest after 3 years' do
+          expect(balance_after(years: 3)).to be_within(0.01).of(6000)
+        end
+
+        it 'calculates interest after 4 years' do
+          expect(balance_after(years: 4)).to be_within(0.01).of(8000)
+        end
+
         it 'calculates interest after 2 years with one credit' do
           account.add_credit(1000, next_year(1))
 
